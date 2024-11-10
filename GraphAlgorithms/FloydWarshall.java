@@ -1,5 +1,7 @@
 package GraphAlgorithms;
 
+//distance between every pair of vertices
+
 public class FloydWarshall {
 
     // This function implements the Floyd-Warshall algorithm to find the shortest paths between all pairs of vertices
