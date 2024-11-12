@@ -1,86 +1,88 @@
 package GraphAlgorithms;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class PrimsAlgorithm {
 
+    // Class to represent an edge with a weight
+    static class Pair {
+        int node;
+        int distance;
+        public Pair(int distance, int node) {
+            this.node = node;
+            this.distance = distance;
+        }
+    }
+
     // Function to implement Prim's algorithm to find the Minimum Spanning Tree (MST)
-    public static void primsMST(int[][] graph) {
-        int V = graph.length;  // Number of vertices in the graph
+    public static int spanningTree(int V, ArrayList<ArrayList<ArrayList<Integer>>> adj) {
+        // Priority queue to store the edges and their weights in ascending order
+        PriorityQueue<Pair> pq = new PriorityQueue<>((x, y) -> x.distance - y.distance);
 
-        // Arrays to store the MST (Minimum Spanning Tree) edges and their weights
-        int[] parent = new int[V];  // parent[i] stores the parent vertex of vertex i in MST
-        int[] key = new int[V];     // key[i] stores the minimum weight edge connecting vertex i to MST
-        boolean[] mstSet = new boolean[V];  // mstSet[i] is true if vertex i is included in MST
+        int[] vis = new int[V];  // Array to track visited nodes
+        pq.add(new Pair(0, 0));  // Start with node 0 having a weight of 0
 
-        // Initialize all keys as infinite (representing no edge), and parent and mstSet as -1 and false, respectively
-        Arrays.fill(key, Integer.MAX_VALUE);
-        Arrays.fill(parent, -1);
-        Arrays.fill(mstSet, false);
+        int sum = 0;  // To store the sum of the MST edge weights
 
-        // Start with the first vertex (arbitrary choice)
-        key[0] = 0;  // Set the key value of the first vertex to 0 to start the MST from it
+        // Loop to process each node and construct the MST
+        while (!pq.isEmpty()) {
+            int wt = pq.peek().distance;  // Weight of the current edge
+            int node = pq.peek().node;  // Node corresponding to the current edge
+            pq.remove();  // Remove the edge from the priority queue
 
-        // Loop through all vertices, constructing the MST
-        for (int count = 0; count < V - 1; count++) {
-            // Select the vertex with the minimum key value that is not yet included in the MST
-            int u = minKey(key, mstSet, V);
-            
-            // Include the selected vertex u in the MST
-            mstSet[u] = true;
+            // Skip if the node has already been included in the MST
+            if (vis[node] == 1) continue;
 
-            // Update the key values and parent indices for the adjacent vertices of the selected vertex u
-            for (int v = 0; v < V; v++) {
-                // Only consider the vertices that are not yet in the MST and have an edge to u
-                if (graph[u][v] != 0 && !mstSet[v] && graph[u][v] < key[v]) {
-                    key[v] = graph[u][v];  // Update the key value to the smaller weight
-                    parent[v] = u;  // Set u as the parent of v
+            // Add the edge weight to the MST sum and mark the node as visited
+            vis[node] = 1;
+            sum += wt;
+
+            // Explore the adjacent nodes and add the corresponding edges to the priority queue
+            for (int i = 0; i < adj.get(node).size(); i++) {
+                int edW = adj.get(node).get(i).get(1);  // Edge weight
+                int adjNode = adj.get(node).get(i).get(0);  // Adjacent node
+
+                if (vis[adjNode] == 0) {
+                    pq.add(new Pair(edW, adjNode));  // Add the adjacent node to the queue
                 }
             }
         }
-        
-        // Print the constructed MST
-        printMST(parent, graph);
-    }
-
-    // Function to find the vertex with the minimum key value from the set of vertices
-    // that are not yet included in the MST.
-    public static int minKey(int[] key, boolean[] mstSet, int V) {
-        // Initialize min value
-        int min = Integer.MAX_VALUE;
-        int minIndex = -1;
-
-        // Loop through all vertices and find the vertex with the minimum key value
-        for (int v = 0; v < V; v++) {
-            if (!mstSet[v] && key[v] < min) {
-                min = key[v];
-                minIndex = v;
-            }
-        }
-        return minIndex;
-    }
-
-    // Function to print the MST constructed by Prim's algorithm
-    public static void printMST(int[] parent, int[][] graph) {
-        System.out.println("Edge \tWeight");
-        // Print all the edges in the MST
-        for (int i = 1; i < parent.length; i++) {
-            System.out.println(parent[i] + " - " + i + "\t" + graph[i][parent[i]]);
-        }
+        return sum;  // Return the total weight of the MST
     }
 
     // Main method to test the Prim's algorithm implementation
     public static void main(String[] args) {
-        // Example graph represented as an adjacency matrix (0 indicates no edge)
-        int[][] graph = {
-            {0, 2, 0, 6, 0},
-            {2, 0, 3, 8, 5},
-            {0, 3, 0, 0, 7},
-            {6, 8, 0, 0, 9},
-            {0, 5, 7, 9, 0}
+        int V = 5;  // Number of vertices in the graph
+        ArrayList<ArrayList<ArrayList<Integer>>> adj = new ArrayList<>();
+        int[][] edges = {
+            {0, 1, 2}, {0, 2, 1}, {1, 2, 1}, {2, 3, 2}, {3, 4, 1}, {4, 2, 2}
         };
 
-        // Call Prim's algorithm to find the MST
-        primsMST(graph);
+        // Initialize the adjacency list
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+
+        // Populate the adjacency list with edges
+        for (int i = 0; i < 6; i++) {
+            int u = edges[i][0];
+            int v = edges[i][1];
+            int w = edges[i][2];
+
+            ArrayList<Integer> tmp1 = new ArrayList<>();
+            ArrayList<Integer> tmp2 = new ArrayList<>();
+
+            tmp1.add(v);
+            tmp1.add(w);
+            tmp2.add(u);
+            tmp2.add(w);
+
+            adj.get(u).add(tmp1);
+            adj.get(v).add(tmp2);
+        }
+
+        // Call the spanningTree function to get the sum of edge weights in the MST
+        int sum = spanningTree(V, adj);
+        System.out.println("The sum of all the edge weights: " + sum);
     }
 }
